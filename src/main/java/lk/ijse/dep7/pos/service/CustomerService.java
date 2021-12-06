@@ -7,7 +7,6 @@ import lk.ijse.dep7.pos.exception.FailedOperationException;
 import lk.ijse.dep7.pos.exception.NotFoundException;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -77,19 +76,8 @@ public class CustomerService {
     }
 
     public  String generateNewCustomerId() throws FailedOperationException {
-        try {
-            ResultSet rst = connection.createStatement().executeQuery("SELECT id FROM customer ORDER BY id DESC LIMIT 1;");
-
-            if (rst.next()) {
-                String id = rst.getString("id");
-                int newCustomerId = Integer.parseInt(id.replace("C", "")) + 1;
-                return String.format("C%03d", newCustomerId);
-            } else {
-                return "C001";
-            }
-        } catch (SQLException e) {
-            throw new FailedOperationException("Failed to generate a new id", e);
-        }
+        String id = CustomerDAO.generateNewCustomerId();
+        return id != null ? CustomerDAO.generateNewCustomerId() : "C001";
     }
 
 }

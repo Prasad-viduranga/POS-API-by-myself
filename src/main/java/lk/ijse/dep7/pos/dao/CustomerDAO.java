@@ -123,7 +123,19 @@ public class CustomerDAO {
         }
     }
 
+    public static  String generateNewCustomerId() throws FailedOperationException {
+        try {
+            ResultSet rst = connection.createStatement().executeQuery("SELECT id FROM customer ORDER BY id DESC LIMIT 1;");
 
+            if (rst.next()) {
+                return rst.getString("id");
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new FailedOperationException("Failed to generate a new id", e);
+        }
+    }
 
 
 
