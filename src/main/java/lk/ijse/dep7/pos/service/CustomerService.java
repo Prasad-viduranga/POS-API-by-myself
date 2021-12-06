@@ -13,12 +13,16 @@ import java.util.List;
 public class CustomerService {
 
     private Connection connection;
+    private CustomerDAO customerDAO;
 
     public CustomerService() {
+
     }
 
     public CustomerService(Connection connection) {
         this.connection = connection;
+        this.customerDAO = new CustomerDAO(connection);
+
     }
 
     public void saveCustomer(CustomerDTO customer) throws DuplicateIdentifierException, FailedOperationException {
@@ -28,7 +32,7 @@ public class CustomerService {
                 throw new DuplicateIdentifierException(customer.getId() + " already exists");
             }
 
-            CustomerDAO.saveCustomer(customer);
+            customerDAO.saveCustomer(customer);
 
         } catch (SQLException e) {
             throw new FailedOperationException("Failed to save the customer", e);
@@ -36,48 +40,48 @@ public class CustomerService {
     }
 
     public long getCustomersCount() throws SQLException {
-        return CustomerDAO.getCustomersCount();
+        return customerDAO.getCustomersCount();
     }
 
     boolean existCustomer(String id) throws SQLException {
-        return CustomerDAO.existCustomer(id);
+        return customerDAO.existCustomer(id);
     }
 
     public void updateCustomer(CustomerDTO customer) throws FailedOperationException, NotFoundException {
 
-        if (!CustomerDAO.existCustomer(customer.getId())) {
+        if (!customerDAO.existCustomer(customer.getId())) {
             throw new NotFoundException("There is no such customer associated with the id " + customer.getId());
         }
-        CustomerDAO.updateCustomer(customer);
+        customerDAO.updateCustomer(customer);
     }
 
     public void deleteCustomer(String id) throws NotFoundException, FailedOperationException {
 
-        if (!CustomerDAO.existCustomer(id)) {
+        if (!customerDAO.existCustomer(id)) {
             throw new NotFoundException("There is no such customer associated with the id " + id);
         }
-        CustomerDAO.deleteCustomer(id);
+        customerDAO.deleteCustomer(id);
     }
 
     public CustomerDTO findCustomer(String id) throws NotFoundException, FailedOperationException {
 
-        if (!CustomerDAO.existCustomer(id)) {
+        if (!customerDAO.existCustomer(id)) {
             throw new NotFoundException("There is no such customer associated with the id " + id);
         }
-        return CustomerDAO.findCustomer(id);
+        return customerDAO.findCustomer(id);
     }
 
     public List<CustomerDTO> findAllCustomers() throws FailedOperationException {
-        return CustomerDAO.findAllCustomers();
+        return customerDAO.findAllCustomers();
     }
 
     public List<CustomerDTO> findAllCustomers(int page, int size) throws FailedOperationException {
-        return CustomerDAO.findAllCustomers(page, size);
+        return customerDAO.findAllCustomers(page, size);
     }
 
     public  String generateNewCustomerId() throws FailedOperationException {
-        String id = CustomerDAO.generateNewCustomerId();
-        return id != null ? CustomerDAO.generateNewCustomerId() : "C001";
+        String id = customerDAO.generateNewCustomerId();
+        return id != null ? customerDAO.generateNewCustomerId() : "C001";
     }
 
 }

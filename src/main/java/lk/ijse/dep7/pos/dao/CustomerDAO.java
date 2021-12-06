@@ -11,9 +11,13 @@ import java.util.List;
 
 public class CustomerDAO {
 
-    private static Connection connection;
+    private Connection connection;
 
-    public static void saveCustomer(CustomerDTO customer) {
+    public CustomerDAO(Connection connection) {
+        this.connection=connection;
+    }
+
+    public  void saveCustomer(CustomerDTO customer) {
 
         PreparedStatement pstm = null;
         try {
@@ -29,7 +33,7 @@ public class CustomerDAO {
 
     }
 
-    public static boolean existCustomer(String id) {
+    public  boolean existCustomer(String id) {
         try (PreparedStatement stm = connection.prepareStatement("SELECT id FROM customer WHERE id=?")) {
             stm.setString(1, id);
             return stm.executeQuery().next();
@@ -38,7 +42,7 @@ public class CustomerDAO {
         }
     }
 
-    public static long getCustomersCount() {
+    public  long getCustomersCount() {
 
         try {
             Statement stm = connection.createStatement();
@@ -50,7 +54,7 @@ public class CustomerDAO {
         }
     }
 
-    public static void updateCustomer(CustomerDTO customer) {
+    public  void updateCustomer(CustomerDTO customer) {
 
         try (PreparedStatement stm = connection.prepareStatement("UPDATE customer SET name=?, address=? WHERE id=?")) {
 
@@ -65,7 +69,7 @@ public class CustomerDAO {
 
     }
 
-    public static void deleteCustomer(String id)   {
+    public  void deleteCustomer(String id)   {
         try {
 
             PreparedStatement stm = connection.prepareStatement("DELETE FROM customer WHERE id=?");
@@ -76,7 +80,7 @@ public class CustomerDAO {
         }
     }
 
-    public static CustomerDTO findCustomer(String id)  {
+    public  CustomerDTO findCustomer(String id)  {
         try {
 
             PreparedStatement stm = connection.prepareStatement("SELECT * FROM customer WHERE id=?");
@@ -89,7 +93,7 @@ public class CustomerDAO {
         }
     }
 
-    public static List<CustomerDTO> findAllCustomers()  {
+    public  List<CustomerDTO> findAllCustomers()  {
         try {
             List<CustomerDTO> customersList = new ArrayList<>();
 
@@ -106,7 +110,7 @@ public class CustomerDAO {
         }
     }
 
-    public static List<CustomerDTO> findAllCustomers(int page, int size)  {
+    public  List<CustomerDTO> findAllCustomers(int page, int size)  {
         try {
             PreparedStatement stm = connection.prepareStatement("SELECT * FROM customer LIMIT ? OFFSET ?;");
             stm.setObject(1, size);
@@ -123,7 +127,7 @@ public class CustomerDAO {
         }
     }
 
-    public static  String generateNewCustomerId() throws FailedOperationException {
+    public   String generateNewCustomerId() throws FailedOperationException {
         try {
             ResultSet rst = connection.createStatement().executeQuery("SELECT id FROM customer ORDER BY id DESC LIMIT 1;");
 
