@@ -1,5 +1,6 @@
 package lk.ijse.dep7.pos.service;
 
+import lk.ijse.dep7.pos.dao.OrderDAO;
 import lk.ijse.dep7.pos.dto.ItemDTO;
 import lk.ijse.dep7.pos.dto.OrderDTO;
 import lk.ijse.dep7.pos.dto.OrderDetailDTO;
@@ -14,23 +15,24 @@ import java.util.List;
 
 public class OrderService {
 
-    private final Connection connection;
+    private Connection connection;
+    private OrderDAO orderDAO;
 
     public OrderService(Connection connection) {
         this.connection = connection;
+        orderDAO = new OrderDAO(connection);
     }
 
     public void saveOrder(String orderId, LocalDate orderDate, String customerId, List<OrderDetailDTO> orderDetails) throws FailedOperationException, DuplicateIdentifierException, NotFoundException {
+
 
         final CustomerService customerService = new CustomerService(connection);
         final ItemService itemService = new ItemService(connection);
 
         try {
             connection.setAutoCommit(false);
-            PreparedStatement stm = connection.prepareStatement("SELECT id FROM `order` WHERE id=?");
-            stm.setString(1, orderId);
 
-            if (stm.executeQuery().next()) {
+            if (orderDAO.existOrder(orderId)) {
                 throw new DuplicateIdentifierException(orderId + " already exists");
             }
 
@@ -38,25 +40,10 @@ public class OrderService {
                 throw new NotFoundException("Customer id doesn't exist");
             }
 
-            stm = connection.prepareStatement("INSERT INTO `order` (id, date, customer_id) VALUES (?,?,?)");
-            stm.setString(1, orderId);
-            stm.setDate(2, Date.valueOf(orderDate));
-            stm.setString(3, customerId);
-
-            if (stm.executeUpdate() != 1) {
-                throw new FailedOperationException("Failed to save the order");
-            }
-            stm = connection.prepareStatement("INSERT INTO order_detail (order_id, item_code, unit_price, qty) VALUES (?,?,?,?)");
+            orderDAO.saveOrder(orderId,orderDate, customerId);
 
             for (OrderDetailDTO detail : orderDetails) {
-                stm.setString(1, orderId);
-                stm.setString(2, detail.getItemCode());
-                stm.setBigDecimal(3, detail.getUnitPrice());
-                stm.setInt(4, detail.getQty());
-
-                if (stm.executeUpdate() != 1) {
-                    throw new FailedOperationException("Failed to save some order details");
-                }
+                orderDAO.saveOrderDetxail(orderId,detail);
 
                 ItemDTO item = itemService.findItem(detail.getItemCode());
                 item.setQtyOnHand(item.getQtyOnHand() - detail.getQty());
